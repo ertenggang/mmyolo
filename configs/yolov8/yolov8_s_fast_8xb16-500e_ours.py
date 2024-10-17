@@ -1,27 +1,74 @@
+# custom_imports = dict(imports=['mmyolo.datasets.piping_dataset'], allow_failed_imports=False)
 _base_ = ['../_base_/default_runtime.py', '../_base_/det_p5_tta.py']
+
+load_from = 'yolov8_n_mask-refine_syncbn_fast_8xb16-500e_coco_20230216_101206-b975b1cd.pth'
+default_hooks = dict(
+    logger=dict(type='LoggerHook', interval=1)
+)
+visualizer = dict(vis_backends=[dict(type='LocalVisBackend'), dict(type='WandbVisBackend')])
 
 # ========================Frequently modified parameters======================
 # -----data related-----
 # data_root = 'data/coco/'  # Root path of data
-data_root = 'data'
-# Path of train annotation file
-train_ann_file = 'annotations/instances_train2017.json'
-train_data_prefix = 'train2017/'  # Prefix of train image path
-# Path of val annotation file
-val_ann_file = 'annotations/instances_val2017.json'
-val_data_prefix = 'val2017/'  # Prefix of val image path
+data_root = '/mnt/e/ours_annotation/'
 
-num_classes = 80  # Number of classes for classification
+# Path of train annotation file
+# train_ann_file = 'annotations/instances_train2017.json'
+# train_ann_file = 'annotations/mmengine_format_5000.json'
+train_ann_file = 'annotations/coco_format_256.json'
+train_data_prefix = 'images/'  # Prefix of train image path
+# Path of val annotation file
+val_ann_file = 'annotations/coco_format_256.json'
+val_data_prefix = 'images/'  # Prefix of val image path
+
+class_names = ['破裂', 
+               '腐蚀',
+               '错口', 
+               '起伏', 
+               '脱节', 
+               '支管暗接', 
+               '异物穿入', 
+               '结垢',
+               '障碍物', 
+               '残墙、坝根',
+               '树根', 
+               '浮渣']
+palettes = [(220, 20, 60), (119, 11, 32), (0, 0, 142), (0, 0, 230), (106, 0, 228),
+         (0, 60, 100), (0, 80, 100), (0, 0, 70), (0, 0, 192), (250, 170, 30),
+         (100, 170, 30), (220, 220, 0), (175, 116, 175), (250, 0, 30),
+         (165, 42, 42), (255, 77, 255), (0, 226, 252), (182, 182, 255),
+         (0, 82, 0), (120, 166, 157), (110, 76, 0), (174, 57, 255),
+         (199, 100, 0), (72, 0, 118), (255, 179, 240), (0, 125, 92),
+         (209, 0, 151), (188, 208, 182), (0, 220, 176), (255, 99, 164),
+         (92, 0, 73), (133, 129, 255), (78, 180, 255), (0, 228, 0),
+         (174, 255, 243), (45, 89, 255), (134, 134, 103), (145, 148, 174),
+         (255, 208, 186), (197, 226, 255), (171, 134, 1), (109, 63, 54),
+         (207, 138, 255), (151, 0, 95), (9, 80, 61), (84, 105, 51),
+         (74, 65, 105), (166, 196, 102), (208, 195, 210), (255, 109, 65),
+         (0, 143, 149), (179, 0, 194), (209, 99, 106), (5, 121, 0),
+         (227, 255, 205), (147, 186, 208), (153, 69, 1), (3, 95, 161),
+         (163, 255, 0), (119, 0, 170), (0, 182, 199), (0, 165, 120),
+         (183, 130, 88), (95, 32, 0), (130, 114, 135), (110, 129, 133),
+         (166, 74, 118), (219, 142, 185), (79, 210, 114), (178, 90, 62),
+         (65, 70, 15), (127, 167, 115), (59, 105, 106), (142, 108, 45),
+         (196, 172, 0), (95, 54, 80), (128, 76, 255), (201, 57, 1),
+         (246, 0, 122), (191, 162, 208)]
+num_classes = len(class_names)  # Number of classes for classification
+metainfo = dict(
+    classes=class_names,
+    palette=palettes[:num_classes]
+)
+
 # Batch size of a single GPU during training
-train_batch_size_per_gpu = 16
+train_batch_size_per_gpu = 128
 # Worker to pre-fetch data for each single GPU during training
-train_num_workers = 8
+train_num_workers = 2
 # persistent_workers must be False if num_workers is 0
 persistent_workers = True
 
 # -----train val related-----
 # Base learning rate for optim_wrapper. Corresponding to 8xb16=64 bs
-base_lr = 0.01
+base_lr = 0.01*64
 max_epochs = 500  # Maximum training epochs
 # Disable mosaic augmentation for final 10 epochs (stage 2)
 close_mosaic_epochs = 10
@@ -40,8 +87,10 @@ model_test_cfg = dict(
 img_scale = (640, 640)  # width, height
 # Dataset type, this will be used to define the dataset
 dataset_type = 'YOLOv5CocoDataset'
+
+# dataset_type = 'PipingDataset'
 # Batch size of a single GPU during validation
-val_batch_size_per_gpu = 1
+val_batch_size_per_gpu = 256
 # Worker to pre-fetch data for each single GPU during validation
 val_num_workers = 2
 
@@ -62,7 +111,7 @@ batch_shapes_cfg = None
 # The scaling factor that controls the depth of the network structure
 deepen_factor = 0.33
 # The scaling factor that controls the width of the network structure
-widen_factor = 0.5
+widen_factor = 0.25
 # Strides of multi-scale prior box
 strides = [8, 16, 32]
 # The output channel of the last stage
@@ -86,11 +135,11 @@ loss_dfl_weight = 1.5 / 4
 lr_factor = 0.01  # Learning rate scaling factor
 weight_decay = 0.0005
 # Save model checkpoint and validation intervals in stage 1
-save_epoch_intervals = 10
+save_epoch_intervals = 3
 # validation intervals in stage 2
-val_interval_stage2 = 1
+val_interval_stage2 = 3
 # The maximum checkpoints to keep.
-max_keep_ckpts = 2
+max_keep_ckpts = 3
 # Single-scale training is recommended to
 # be turned on, which can speed up training.
 env_cfg = dict(cudnn_benchmark=True)
@@ -234,15 +283,16 @@ train_dataloader = dict(
     batch_size=train_batch_size_per_gpu,
     num_workers=train_num_workers,
     persistent_workers=persistent_workers,
-    pin_memory=True,
+    pin_memory=False,
     sampler=dict(type='DefaultSampler', shuffle=True),
     collate_fn=dict(type='yolov5_collate'),
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
+        metainfo=metainfo,
         ann_file=train_ann_file,
         data_prefix=dict(img=train_data_prefix),
-        filter_cfg=dict(filter_empty_gt=False, min_size=32),
+        # filter_cfg=dict(filter_empty_gt=False, min_size=32),
         pipeline=train_pipeline))
 
 test_pipeline = [
@@ -264,12 +314,13 @@ val_dataloader = dict(
     batch_size=val_batch_size_per_gpu,
     num_workers=val_num_workers,
     persistent_workers=persistent_workers,
-    pin_memory=True,
+    pin_memory=False,
     drop_last=False,
     sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
+        metainfo=metainfo,
         test_mode=True,
         data_prefix=dict(img=val_data_prefix),
         ann_file=val_ann_file,

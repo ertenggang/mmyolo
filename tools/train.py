@@ -15,12 +15,13 @@ from mmyolo.utils import is_metainfo_lower
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
-    parser.add_argument('config', help='train config file path')
+    # parser.add_argument('--config', help='train config file path', default='./configs/yolov8/yolov8_n_syncbn_fast_8xb16-500e_coco.py')
+    parser.add_argument('--config', help='train config file path', default='/mnt/d/projects/mmyolo/configs/yolov8/yolov8_s_fast_8xb16-500e_ours.py')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
         '--amp',
         action='store_true',
-        default=False,
+        default=True,
         help='enable automatic-mixed-precision training')
     parser.add_argument(
         '--resume',

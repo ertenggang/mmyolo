@@ -5,6 +5,8 @@ from statistics import median
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+plt.rcParams["font.sans-serif"]=["SimHei"] #设置字体
+plt.rcParams["axes.unicode_minus"]=False #该语句解决图像中的“-”负号的乱码问题
 import numpy as np
 from mmengine.config import Config
 from mmengine.registry import init_default_scope
@@ -398,6 +400,7 @@ def main():
         classes = dataset.metainfo['classes']
         classes_idx = [i for i in range(len(classes))]
         fig_set = fig_all_set
+        print(classes)
     elif args.class_name in dataset.metainfo['classes']:
         classes = [args.class_name]
         classes_idx = [dataset.metainfo['classes'].index(args.class_name)]

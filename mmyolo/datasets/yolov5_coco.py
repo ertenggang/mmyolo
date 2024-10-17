@@ -3,7 +3,8 @@ from typing import Any, Optional
 
 from mmdet.datasets import BaseDetDataset, CocoDataset
 
-from ..registry import DATASETS, TASK_UTILS
+# from ..registry import DATASETS, TASK_UTILS
+from mmyolo.registry import DATASETS,TASK_UTILS
 
 
 class BatchShapePolicyDataset(BaseDetDataset):
@@ -63,3 +64,17 @@ class YOLOv5CocoDataset(BatchShapePolicyDataset, CocoDataset):
     `mmyolo/datasets/utils.py#BatchShapePolicy` for details
     """
     pass
+
+
+
+if __name__ == '__main__':
+    data_root = '/mnt/d/projects/mmyolo/data'
+    ann_file = 'instances_val2014.json'
+    data_prefix = dict(img='images/')
+    d = YOLOv5CocoDataset(data_root=data_root, ann_file=ann_file, data_prefix=data_prefix)
+    for data in d:
+        print(data.keys())
+        print('a')
+        break
+
+    

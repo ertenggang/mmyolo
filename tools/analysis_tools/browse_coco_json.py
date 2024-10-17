@@ -3,6 +3,11 @@ import os.path as osp
 
 import cv2
 import matplotlib.pyplot as plt
+
+import matplotlib.pyplot as plt
+plt.rcParams["font.sans-serif"]=["SimHei"] #设置字体
+plt.rcParams["axes.unicode_minus"]=False #该语句解决图像中的“-”负号的乱码问题
+
 import numpy as np
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Polygon
@@ -43,10 +48,14 @@ def show_coco_json(args):
             imgIds=image_data['id'], catIds=category_ids, iscrowd=0)
         annotations = coco.loadAnns(annotation_ids)
 
+        # print(image_path)
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        plt.figure()
+        fig = plt.figure()
+        fig.canvas.manager.set_window_title(image_path)
+        # plt.suptitle(image_path)
+        # plt.title(image_path)
         plt.imshow(image)
 
         if args.disp_all:
